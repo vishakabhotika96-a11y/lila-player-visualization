@@ -88,10 +88,14 @@ st.title("Gaming Analytics Dashboard")
 
 # Display minimap
 st.header("Minimap")
-minimap_path = f"minimaps/{selected_map}_Minimap.png"
-if Path(minimap_path).exists():
-    minimap_image = Image.open(minimap_path)
-    st.image(minimap_image, caption=f"{selected_map} Minimap", use_column_width=True)
+minimap_path_png = f"minimaps/{selected_map}_Minimap.png"
+minimap_path_jpg = f"minimaps/{selected_map}_Minimap.jpg"
+if Path(minimap_path_png).exists():
+    minimap_image = Image.open(minimap_path_png)
+    st.image(minimap_image, caption=f"{selected_map} Minimap", width='stretch')
+elif Path(minimap_path_jpg).exists():
+    minimap_image = Image.open(minimap_path_jpg)
+    st.image(minimap_image, caption=f"{selected_map} Minimap", width='stretch')
 else:
     st.warning("Minimap image not found")
 
@@ -140,28 +144,23 @@ if not filtered_data.empty:
         height=600
     )
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
 
     # Heatmap
     st.header("Movement Heatmap")
 
-    # Create heatmap using matplotlib
+    # Create heatmap using seaborn
     fig, ax = plt.subplots(figsize=(10, 8))
 
-    # Separate humans and bots
-    human_data = filtered_data[filtered_data['player_type'] == 'Human']
-    bot_data = filtered_data[filtered_data['player_type'] == 'Bot']
+    # Combine data for easier plotting
+    plot_data = filtered_data.copy()
 
-    if not human_data.empty:
-        sns.kdeplot(data=human_data, x='x', y='z', cmap='Blues', fill=True, alpha=0.6, ax=ax, label='Humans')
-
-    if not bot_data.empty:
-        sns.kdeplot(data=bot_data, x='x', y='z', cmap='Reds', fill=True, alpha=0.6, ax=ax, label='Bots')
+    # Create KDE plot with hue
+    sns.kdeplot(data=plot_data, x='x', y='z', hue='player_type', fill=True, alpha=0.6, ax=ax, palette={'Human': 'blue', 'Bot': 'red'})
 
     ax.set_title("Player Movement Density")
     ax.set_xlabel("X Coordinate")
     ax.set_ylabel("Z Coordinate")
-    ax.legend()
 
     st.pyplot(fig)
 
